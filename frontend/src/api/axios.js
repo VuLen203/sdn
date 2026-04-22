@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 // Base API instance
 // CRA proxy in package.json forwards same-origin requests to backend.
 const api = axios.create({
-  baseURL: '/',
+  baseURL: process.env.REACT_APP_API_URL || '/',
 });
 
 // Attach JWT token from localStorage to every request
