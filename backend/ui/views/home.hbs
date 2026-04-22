@@ -1,0 +1,16 @@
+<div class="py-4">
+  <h1 class="mb-2">Question Bank Management</h1>
+  <p class="text-muted mb-4">Server-rendered UI (Handlebars layout + EJS pages).</p>
+
+  {{#if user}}
+    <div class="d-flex gap-2">
+      <a class="btn btn-primary" href="/quizzes">Go to Quizzes</a>
+      <a class="btn btn-outline-secondary" href="/questions">Go to Questions</a>
+    </div>
+  {{else}}
+    <div class="d-flex gap-2">
+      <a class="btn btn-primary" href="/login">Login</a>
+      <a class="btn btn-outline-secondary" href="/register">Register</a>
+    </div>
+  {{/if}}
+</div>

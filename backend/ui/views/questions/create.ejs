@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Questions</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="/public/css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container py-4" style="max-width: 980px;">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="mb-0">Add Questions</h1>
+        <% if (quizId) { %>
+          <a class="btn btn-outline-secondary" href="/quizzes/<%= quizId %>">Back to Quiz</a>
+        <% } else { %>
+          <a class="btn btn-outline-secondary" href="/questions">Back</a>
+        <% } %>
+      </div>
+
+      <% if (error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+      <% } %>
+      <form
+        method="post"
+        action="<%= quizId ? `/quizzes/${quizId}/questions` : '/questions/bulk' %>"
+        id="form"
+      >
+        <% if (!quizId) { %>
+          <div class="card card-body mb-3">
+            <label class="form-label">Select Quiz</label>
+            <select class="form-select" name="quizId" required>
+              <option value="" selected disabled>Choose a quiz...</option>
+              <% (quizzes || []).forEach(q => { %>
+                <option value="<%= q._id %>"><%= q.title %></option>
+              <% }) %>
+            </select>
+          </div>
+        <% } %>
+        <div id="questions"></div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-outline-secondary" type="button" id="addQuestion">Add another question</button>
+          <button class="btn btn-primary" type="submit">Save questions</button>
+        </div>
+      </form>
+
+      <template id="questionTemplate">
+        <div class="border rounded-3 p-3 mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="h5 mb-0">Question <span class="q-number"></span></h2>
+            <button class="btn btn-sm btn-outline-danger remove-question" type="button">Remove</button>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Question Text</label>
+            <input class="form-control questionText" required />
+          </div>
+
+          <div class="options">
+            <label class="form-label">Options (choose correct)</label>
+          </div>
+
+          <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-sm btn-outline-secondary add-option" type="button">Add option</button>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <script>
+      (function () {
+        const questionsEl = document.getElementById('questions');
+        const addQuestionBtn = document.getElementById('addQuestion');
+        const tpl = document.getElementById('questionTemplate');
+
+        function renderLetters() {
+          document.querySelectorAll('.q-block').forEach((block, qIdx) => {
+            block.querySelector('.q-number').textContent = String(qIdx + 1);
+            block.querySelectorAll('.option-row').forEach((row, optIdx) => {
+              row.querySelector('.opt-letter').textContent = String.fromCharCode(65 + optIdx);
+              row.querySelector('input[type="radio"]').value = String(optIdx);
+            });
+          });
+        }
+
+        function addOption(block, value) {
+          const optionsEl = block.querySelector('.options');
+          const optIdx = optionsEl.querySelectorAll('.option-row').length;
+          const row = document.createElement('div');
+          row.className = 'input-group mb-2 option-row';
+          row.innerHTML = `
+            <span class="input-group-text opt-letter" style="min-width: 54px;">${String.fromCharCode(65 + optIdx)}</span>
+            <div class="input-group-text">
+              <input class="form-check-input mt-0" type="radio" name="correctIndex" required />
+            </div>
+            <input class="form-control opt-input" required />
+          `;
+          optionsEl.appendChild(row);
+          if (value) row.querySelector('.opt-input').value = value;
+        }
+
+        function addQuestion() {
+          const node = tpl.content.cloneNode(true);
+          const block = node.querySelector('.q-block');
+
+          block.querySelector('.add-option').addEventListener('click', () => {
+            addOption(block);
+            renderLetters();
+          });
+
+          block.querySelector('.remove-question').addEventListener('click', () => {
+            block.remove();
+            renderLetters();
+            hydrateNames();
+          });
+
+          // default 4 options
+          addOption(block);
+          addOption(block);
+          addOption(block);
+          addOption(block);
+
+          questionsEl.appendChild(node);
+          renderLetters();
+          hydrateNames();
+        }
+
+        function hydrateNames() {
+          document.querySelectorAll('.q-block').forEach((block, qIdx) => {
+            // question text
+            const qt = block.querySelector('.questionText');
+            qt.name = `questions[${qIdx}][questionText]`;
+
+            // options
+            const opts = block.querySelectorAll('.opt-input');
+            opts.forEach((input) => {
+              input.name = `questions[${qIdx}][options][]`;
+            });
+
+            // correct index (radio group)
+            const radios = block.querySelectorAll('input[type="radio"][name="correctIndex"]');
+            radios.forEach((r) => {
+              r.name = `questions[${qIdx}][correctIndex]`;
+            });
+          });
+        }
+
+        addQuestionBtn.addEventListener('click', addQuestion);
+
+        // initial question
+        addQuestion();
+
+        document.getElementById('form').addEventListener('submit', () => {
+          hydrateNames();
+        });
+      })();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

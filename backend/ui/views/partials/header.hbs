@@ -1,0 +1,30 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container">
+    <a class="navbar-brand" href="/">Question Bank</a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#nav"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="/quizzes">Quizzes</a></li>
+        <li class="nav-item"><a class="nav-link" href="/questions">Questions</a></li>
+      </ul>
+      <div class="d-flex gap-2">
+        {{#if currentUser}}
+          <span class="navbar-text">{{currentUser.username}} ({{currentUser.role}})</span>
+          <form method="post" action="/logout" class="mb-0">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">Logout</button>
+          </form>
+        {{else}}
+          <a class="btn btn-outline-primary btn-sm" href="/login">Login</a>
+          <a class="btn btn-primary btn-sm" href="/register">Register</a>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</nav>
